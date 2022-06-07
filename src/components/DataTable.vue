@@ -183,11 +183,6 @@ const updateSortField = (newSortBy, oldSortType = 'none') => {
     };
   }
 };
-
-watch(() => {
-  console.log('clientSortOptions', clientSortOptions.value);
-  console.log('itemsSearching', itemsSearching.value);
-});
 </script>
 
 <style lang="scss" scoped>
