@@ -1,6 +1,17 @@
 <template>
   <div class="main-table">
-    <DataTable :headers="headers" :items="items">
+    <input
+      class="search"
+      type="text"
+      v-model="searchValue"
+      placeholder="Поиск"
+    />
+    <DataTable
+      :headers="headers"
+      :items="items"
+      :search-field="searchField"
+      :search-value="searchValue"
+    >
       <template #active="{ active }">
         <div
           :class="{
@@ -16,7 +27,11 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import DataTable from './components/DataTable.vue';
+
+const searchField = ref('name');
+const searchValue = ref('Ильмир1');
 
 const headers = [
   { text: 'Вроде имя', value: 'name' },
@@ -72,5 +87,10 @@ const items = [
   height: 15px;
   background: red;
   border-radius: 50%;
+}
+
+.search {
+  padding: 8px;
+  margin-bottom: 20px;
 }
 </style>

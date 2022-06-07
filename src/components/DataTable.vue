@@ -74,9 +74,13 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  showIndex: {
-    type: Boolean,
-    default: false,
+  searchField: {
+    type: String,
+    default: '',
+  },
+  searchValue: {
+    type: String,
+    default: '',
   },
   sortBy: {
     type: String,
@@ -86,13 +90,7 @@ const props = defineProps({
     type: String,
     default: 'asc',
   },
-  serverOptions: {
-    type: Object,
-    default: () => null,
-  },
 });
-
-const emits = defineEmits(['update:serverOptions']);
 
 const initClientSortOptions = () => {
   if (props.sortBy !== '') {
@@ -109,42 +107,14 @@ const { headerFontColor } = toRefs(props);
 
 const ifHasBodySlot = computed(() => slots.body);
 const fontSizePx = computed(() => `${props.bodyFontSize}px`);
-const isServerSideMode = computed(() => props.serverOptions !== null);
 
 const clientSortOptions = ref(initClientSortOptions());
-
-const serverOptionsComputed = computed({
-  get: () => {
-    if (props.serverOptions) {
-      const { sortBy, sortType } = props.serverOptions;
-      return {
-        sortBy: sortBy ?? null,
-        sortType: sortType ?? null,
-      };
-    }
-    return {
-      sortBy: null,
-      sortType: null,
-    };
-  },
-  set: (value) => {
-    emits('update:serverOptions', value);
-  },
-});
 
 const headersForRender = computed(() => {
   const headersSorting = props.headers.map((header) => {
     const headerSorting = header;
     if (header.sortable) headerSorting.sortType = 'none';
     if (
-      isServerSideMode.value &&
-      header.value === serverOptionsComputed.value.sortBy &&
-      serverOptionsComputed.value.sortType
-    ) {
-      headerSorting.sortType = serverOptionsComputed.value.sortType;
-    }
-    if (
-      !isServerSideMode.value &&
       clientSortOptions.value &&
       header.value === clientSortOptions.value.sortBy
     ) {
@@ -158,11 +128,21 @@ const headersForRender = computed(() => {
 });
 
 const itemsSearching = computed(() => {
+  if (props.searchValue !== '') {
+    const regex = new RegExp(props.searchValue, 'i');
+    return props.items.filter((item) =>
+      regex.test(
+        props.searchField !== ''
+          ? item[props.searchField]
+          : Object.values(item).join(' ')
+      )
+    );
+  }
+
   return props.items;
 });
 
 const itemsSorting = computed(() => {
-  if (isServerSideMode.value) return props.items;
   if (clientSortOptions.value === null) return itemsSearching.value;
   const { sortBy, sortDesc } = clientSortOptions.value;
   const itemsSearchingSorted = [...itemsSearching.value];
@@ -206,7 +186,7 @@ const updateSortField = (newSortBy, oldSortType = 'none') => {
 
 watch(() => {
   console.log('clientSortOptions', clientSortOptions.value);
-  console.log('itemsSorting', itemsSorting.value);
+  console.log('itemsSearching', itemsSearching.value);
 });
 </script>
 
